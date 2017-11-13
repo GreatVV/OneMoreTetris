@@ -1,16 +1,21 @@
-﻿public class GameSimulation : IUpdateable
+﻿using System.Linq;
+using UnityEngine.Experimental.Rendering;
+
+public class GameSimulation : IUpdateable
 {
     private readonly Config _config;
     private readonly GameState _gameState;
-    private readonly FigureControl _control;
+    private readonly IControl _control;
     private readonly IFigureFactory _figureFactory;
+    private readonly FigureViewManager _figureViewManager;
 
     public bool IsGameOver;
 
-    public GameSimulation(Config config, IFigureFactory figureFactory, GameState gameState, FigureControl control)
+    public GameSimulation(Config config, IFigureFactory figureFactory, FigureViewManager figureViewManager, GameState gameState, IControl control)
     {
         _config = config;
         _figureFactory = figureFactory;
+        _figureViewManager = figureViewManager;
         _gameState = gameState;
         _control = control;
     }
@@ -19,28 +24,21 @@
     {
         if (_control.CurrentFigure == null)
         {
-            var currentFigure = _figureFactory.NewFigureDescription;
+            var currentFigureDesc = _figureFactory.NewFigureDescription;
+            var currentFigure = new Figure(currentFigureDesc);
+            
             if (!_gameState.CanMoveTo(currentFigure, (int) _config.SpawnPosition.x, (int) _config.SpawnPosition.y))
             {
                 IsGameOver = true;
             }
             else
             {
-                _figureFactory.SpawnFigure(currentFigure);
+                var figureView = _figureFactory.SpawnFigure(currentFigureDesc);
+                figureView.FigureDesc = currentFigure;
                 _gameState.MoveTo(currentFigure, (int) _config.SpawnPosition.x, (int) _config.SpawnPosition.y);
-            }
-        }
-        else
-        {
-            var currentFigure = _control.CurrentFigure;
+                _figureViewManager.AddFigure(figureView);
 
-            if (_gameState.CanMoveTo(currentFigure, currentFigure.X, currentFigure.Y - 1))
-            {
-                _gameState.MoveTo(currentFigure, currentFigure.X, currentFigure.Y - 1);
-            }
-            else
-            {
-                currentFigure = null;
+                _control.CurrentFigure = currentFigure;
             }
         }
     }

@@ -1,6 +1,6 @@
 ﻿public class FigureControl : IControl
 {
-    public Figure CurrentFigure;
+    public Figure CurrentFigure { get; set; }
 	
     private readonly GameState _gameState;
 
@@ -11,7 +11,7 @@
 
     public void RotateClockWise()
     {
-        if (CurrentFigure != null) _gameState.RotateCounterClockwise(CurrentFigure);
+        if (CurrentFigure != null) _gameState.RotateClockwise(CurrentFigure);
     }
 
     public void RotateCounterClockWise()
@@ -36,10 +36,17 @@
     }
 
     public void MoveDown()
-    { 
-        if (CurrentFigure != null && _gameState.CanMoveTo(CurrentFigure, CurrentFigure.X, CurrentFigure.Y-1))
+    {
+        if (CurrentFigure == null) 
+            return;
+        
+        if (_gameState.CanMoveTo(CurrentFigure, CurrentFigure.X, CurrentFigure.Y - 1))
         {
-            _gameState.MoveTo(CurrentFigure, CurrentFigure.X, CurrentFigure.Y-1);
+            _gameState.MoveTo(CurrentFigure, CurrentFigure.X, CurrentFigure.Y - 1);
+        }
+        else
+        {
+            CurrentFigure = null;
         }
     }
 }

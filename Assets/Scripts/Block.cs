@@ -12,6 +12,11 @@ public class Block
         get { return (int) Position.y; }
     }
 
+    public Block()
+    {
+        
+    }
+    
     public Block(int x, int y)
     {
         Position = new Vector2(x,y);

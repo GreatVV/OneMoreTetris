@@ -19,11 +19,20 @@ public class Game : MonoBehaviour
 		var playerInput = new KeyboardPlayerInput(control);
 		_updateables.Add(playerInput);
 
+		var autoMove = new CurrentFigureMoveDownSystem(control, Config);
+		_updateables.Add(autoMove);
+
+		var figureViewManager = new FigureViewManager(Config);
+		_updateables.Add(figureViewManager);
+
+		var killSystem = new KillLinesSystem(GameState, control);
+		_updateables.Add(killSystem);
+		
 		var figureFactory = new FigureFactory(Config);
 
-		var gameSimulation = new GameSimulation(Config, figureFactory, GameState, control);
+		var gameSimulation = new GameSimulation(Config, figureFactory, figureViewManager, GameState, control);
 		_updateables.Add(gameSimulation);
-
+		
 	}
 
 	public void Update()

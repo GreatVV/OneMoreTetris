@@ -256,4 +256,114 @@ public class GameStateTests {
 		Assert.AreEqual(0, gameState.FullLines[0]);
 		Assert.AreEqual(2, gameState.FullLines[1]);
 	}
+
+	[Test]
+	public void MoveLefTest()
+	{
+		var gameState = new GameState(3, 3);
+		
+		
+		var blocks1 = new Block[]
+		{
+			new Block(0, 0),
+		};
+
+		var figure1 = new Figure(blocks1);
+		
+		gameState.MoveTo(figure1, 1,2);
+		Assert.AreEqual(figure1, gameState.GetFigureAt(1,2));
+		Assert.IsTrue(gameState.CanMoveTo(figure1, 0,2));
+		
+		var control = new FigureControl(gameState);
+		control.CurrentFigure = figure1;
+		control.MoveLeft();
+		Assert.AreEqual(null, gameState.GetFigureAt(1,2));
+		Assert.AreEqual(figure1, gameState.GetFigureAt(0,2));
+	}
+	
+	[Test]
+	public void MoveRightTest()
+	{
+		var gameState = new GameState(3, 3);
+		
+		
+		var blocks1 = new Block[]
+		{
+			new Block(0, 0),
+		};
+
+		var figure1 = new Figure(blocks1);
+		
+		gameState.MoveTo(figure1, 1,2);
+		Assert.AreEqual(figure1, gameState.GetFigureAt(1,2));
+		Assert.IsTrue(gameState.CanMoveTo(figure1, 2,2));
+		
+		var control = new FigureControl(gameState);
+		control.CurrentFigure = figure1;
+		control.MoveRight();
+		Assert.AreEqual(null, gameState.GetFigureAt(1,2));
+		Assert.AreEqual(figure1, gameState.GetFigureAt(2,2));
+	}
+
+	[Test]
+	public void KillLineTest()
+	{
+		var gameState = new GameState(3, 3);
+		
+		var blocks1 = new Block[]
+		{
+			new Block(0, 0),
+			new Block(1, 0),
+			new Block(1, 1),
+			new Block(1, 2)
+		};
+
+		var figure1 = new Figure(blocks1);
+
+		var blocks2 = new Block[]
+		{
+			new Block(0, 0),
+			new Block(0, 1),
+			new Block(0, 2)
+		};
+		
+		var figure2 = new Figure(blocks2);
+		
+		Assert.AreEqual(0, gameState.FullLines.Count);
+		
+		gameState.MoveTo(figure1, 0,0);
+		gameState.MoveTo(figure2, 2, 0);
+		
+		// 0 1 2
+		// 0 1 2
+		// 1 1 2
+
+		gameState.UpdateFullLines();
+		
+		Assert.IsTrue(gameState.IsTaken(0, 0));
+		Assert.IsTrue(gameState.IsTaken(1, 0));
+		Assert.IsTrue(gameState.IsTaken(2, 0));
+
+		var control = new FigureControl(gameState);
+		
+		var killSystem = new KillLinesSystem(gameState, control);
+		killSystem.Tick();
+		
+		// 0 0 0
+		// 0 1 2
+		// 0 1 2
+		
+		Assert.IsFalse(gameState.IsTaken(0, 0));
+		Assert.IsTrue(gameState.IsTaken(1, 0));
+		Assert.IsTrue(gameState.IsTaken(2, 0));
+		
+		Assert.AreEqual(null, gameState.GetFigureAt(0,0));
+		Assert.AreEqual(figure1, gameState.GetFigureAt(1,0));
+		Assert.AreEqual(figure2, gameState.GetFigureAt(2,0));
+		
+		Assert.IsFalse(gameState.IsTaken(0, 1));
+		Assert.IsFalse(gameState.IsTaken(0, 2));
+		Assert.IsFalse(gameState.IsTaken(0, 3));
+
+	}
 }

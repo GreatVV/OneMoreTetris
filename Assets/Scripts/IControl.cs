@@ -5,4 +5,5 @@
     void MoveLeft();
     void MoveRight();
     void MoveDown();
+    Figure CurrentFigure { get; set; }
 }

@@ -1,6 +1,4 @@
-﻿using NUnit.Framework;
-
-public class CellState
+﻿public class CellState
 {
     public bool IsTaken
     {
@@ -8,4 +6,5 @@ public class CellState
     }
 
     public Figure Figure;
+    public Block Block;
 }

@@ -6,6 +6,7 @@ public class FigureView : MonoBehaviour, IUpdateable
     public Figure FigureDesc;
 
     public BlockView[] BlockViews;
+    [SerializeField] public RectTransform Transform;    
 
     public void Tick()
     {

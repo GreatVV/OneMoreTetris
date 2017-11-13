@@ -43,30 +43,62 @@ public class GameState
 
     public Figure GetFigureAt(int x, int y)
     {
-        return CellStates[GetIndex(x, y)].Figure;
+        var index = GetIndex(x, y);
+        if (index < 0 || index > CellStates.Length - 1)
+        {
+            return null;
+        }
+        return CellStates[index].Figure;
     }
 
     public void MoveTo(Figure figure, int x, int y)
     {
+        if (figure.X > 0 && figure.Y > 0)
+        {
+            for (var index = 0; index < figure.Blocks.Length; index++)
+            {
+                var block = figure.Blocks[index];
+                var previousX = figure.X + block.X;
+                var previousY = figure.Y + block.Y;
+                var targetCellIndex = GetIndex(previousX, previousY);
+                var cellState = CellStates[targetCellIndex];
+                cellState.Figure = null;
+                cellState.Block = null;
+            }
+        }
+
+        figure.X = x;
+        figure.Y = y;
         foreach (var block in figure.Blocks)
         {
             var blockX = block.X + x;
             var blockY = block.Y + y;
             var index = GetIndex(blockX, blockY);
-            CellStates[index].Figure = figure;
+            var cellState = CellStates[index];
+            cellState.Block = block;
+            cellState.Figure = figure;
         }
-        figure.X = x;
-        figure.Y = y;
+        
     }
 
 
     public bool CanMoveTo(Figure figure, int x, int y)
     {
+        if (y < 0 || x < 0 || x > Width - 1)
+        {
+            return false;
+        }
+        
         foreach (var block in figure.Blocks)
         {
             var blockX = block.X + x;
             var blockY = block.Y + y;
-            if (IsTaken(x, y))
+            if (GetFigureAt(blockX, blockY) == figure)
+            {
+                continue;
+            }
+            
+            if (IsTaken(blockX, blockY))
             {
                 return false;
             }
@@ -77,10 +109,13 @@ public class GameState
     
     public void RotateCounterClockwise(Figure figure)
     {
+        var nextSetIndex = (figure.CurrentSet == figure.RotationSets.Length - 1) ? 0 : (figure.CurrentSet + 1);
+        TryRotateToSet(figure,  nextSetIndex);
+    }
 
-        var nextSetIndex = figure.CurrentSet == figure.RotationSets.Length - 1 ? 0 : (figure.CurrentSet + 1);
+    private void TryRotateToSet(Figure figure, int nextSetIndex)
+    {
         var newSet = figure.RotationSets[nextSetIndex];
-
         foreach (var newPosition in newSet)
         {
             var newPositionX = figure.X + (int) newPosition.x;
@@ -91,8 +126,8 @@ public class GameState
             {
                 continue;
             }
-            
-            if (IsTaken(newPositionX, newPositionY) )
+
+            if (IsTaken(newPositionX, newPositionY))
             {
                 return;
             }
@@ -101,11 +136,14 @@ public class GameState
         for (var index = 0; index < figure.Blocks.Length; index++)
         {
             var block = figure.Blocks[index];
-            CellStates[GetIndex(figure.X + block.X, figure.Y + block.Y)].Figure = null;
+            var cellIndex = GetIndex(figure.X + block.X, figure.Y + block.Y);
+            var cellState = CellStates[cellIndex];
+            cellState.Figure = null;
+            cellState.Block = null;
         }
 
         figure.Rotate(nextSetIndex);
-        
+
         MoveTo(figure, figure.X, figure.Y);
     }
 
@@ -130,6 +168,15 @@ public class GameState
             }
         }
     }
+
+    public void RotateClockwise(Figure figure)
+    {
+        var nextSetIndex = (figure.CurrentSet == 0) ? (figure.RotationSets.Length - 1) : (figure.CurrentSet - 1);
+        TryRotateToSet(figure, nextSetIndex);
+    }
+
+    
+    
 }
 
 
