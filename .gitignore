@@ -1,0 +1,9 @@
+/Library/
+/Temp/
+/.vs/
+/Debug/
+/obj/
+*.sln
+*.csproj
+*.DS_Store
+/.idea/
