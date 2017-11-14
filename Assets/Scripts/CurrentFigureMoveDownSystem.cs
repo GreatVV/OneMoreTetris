@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public class CurrentFigureMoveDownSystem : IUpdateable
+public class CurrentFigureMoveDownSystem : IExecuteSystem
 {
     private readonly IControl _control;
     private readonly Config _config;

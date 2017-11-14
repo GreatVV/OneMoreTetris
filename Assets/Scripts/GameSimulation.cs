@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using UnityEngine.Experimental.Rendering;
 
-public class GameSimulation : IUpdateable
+public class GameSimulation : IExecuteSystem
 {
     private readonly Config _config;
     private readonly GameState _gameState;
@@ -30,6 +30,7 @@ public class GameSimulation : IUpdateable
             if (!_gameState.CanMoveTo(currentFigure, (int) _config.SpawnPosition.x, (int) _config.SpawnPosition.y))
             {
                 IsGameOver = true;
+                _config.LoseScreen.gameObject.SetActive(true);
             }
             else
             {

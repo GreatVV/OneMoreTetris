@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 
 
-public class FigureView : MonoBehaviour, IUpdateable
+public class FigureView : MonoBehaviour, IExecuteSystem
 {
     public Figure FigureDesc;
 

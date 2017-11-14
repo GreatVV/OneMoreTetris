@@ -9,35 +9,31 @@ public class Game : MonoBehaviour
 	
 	public GameState GameState;
 
-	private List<IUpdateable> _updateables = new List<IUpdateable>();
+	private List<IExecuteSystem> _systems = new List<IExecuteSystem>();
 
 	public void Start()
 	{
 		GameState = new GameState(Config.Width, Config.Height);
 
 		var control = new FigureControl(GameState); 
-		var playerInput = new KeyboardPlayerInput(control);
-		_updateables.Add(playerInput);
-
+		var figureControl = new KeyboardPlayerInput(control);
 		var autoMove = new CurrentFigureMoveDownSystem(control, Config);
-		_updateables.Add(autoMove);
-
 		var figureViewManager = new FigureViewManager(Config);
-		_updateables.Add(figureViewManager);
-
-		var killSystem = new KillLinesSystem(GameState, control);
-		_updateables.Add(killSystem);
-		
+		var scoreSystem = new ScoreSystem(Config);
+		var killSystem = new KillLinesSystem(Config, GameState, scoreSystem, control);
 		var figureFactory = new FigureFactory(Config);
-
 		var gameSimulation = new GameSimulation(Config, figureFactory, figureViewManager, GameState, control);
-		_updateables.Add(gameSimulation);
 		
+		_systems.Add(autoMove);
+		_systems.Add(figureControl);
+		_systems.Add(killSystem);
+		_systems.Add(gameSimulation);
+		_systems.Add(figureViewManager);
 	}
 
 	public void Update()
 	{
-		foreach (var updateable in _updateables)
+		foreach (var updateable in _systems)
 		{
 			updateable.Tick();
 		}

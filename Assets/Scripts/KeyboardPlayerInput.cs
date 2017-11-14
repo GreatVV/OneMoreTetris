@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public class KeyboardPlayerInput : IUpdateable 
+public class KeyboardPlayerInput : IExecuteSystem 
 {
     private readonly IControl _control;
 

@@ -3,7 +3,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class FigureViewManager : IUpdateable
+public class FigureViewManager : IExecuteSystem
 {
     private readonly Config _config;
     public List<FigureView> FigureViews = new List<FigureView>();
@@ -13,12 +13,6 @@ public class FigureViewManager : IUpdateable
     public FigureViewManager(Config config)
     {
         _config = config;
-
-        var aspectRatioFitter = _config.FigureRoot.GetComponent<AspectRatioFitter>() ??
-                                _config.FigureRoot.gameObject.AddComponent<AspectRatioFitter>();
-        aspectRatioFitter.aspectMode = AspectRatioFitter.AspectMode.FitInParent;
-        aspectRatioFitter.aspectRatio = _config.Width / (float) _config.Height;
-
     }
 	
     public void AddFigure(FigureView figureView)
@@ -26,10 +20,21 @@ public class FigureViewManager : IUpdateable
         FigureViews.Add(figureView);
     }
 
+    private List<FigureView> _destroyList = new List<FigureView>();
+
     public void Tick()
     {
-        anchorSizeX = 1f / _config.Width;
-        anchorSizeY = 1f / _config.Height;
+        var fieldDescription = _config.FieldDescription;
+        var offsetXFloat = fieldDescription.OffsetX / (float) fieldDescription.TotalWidth;
+        var offsetYFloat = fieldDescription.OffsetY / (float) fieldDescription.TotalHeight;
+        
+        var spacingXFloat = fieldDescription.SpacingX / (float) fieldDescription.TotalWidth;
+        var spacingYFloat = fieldDescription.SpacingY / (float) fieldDescription.TotalHeight;
+
+        anchorSizeX = fieldDescription.CellSizeX / (float) fieldDescription.TotalWidth;
+        anchorSizeY = fieldDescription.CellSizeY / (float) fieldDescription.TotalHeight;
+        
+        _destroyList.Clear();
         
         for (var i = 0; i < FigureViews.Count; i++)
         {
@@ -37,7 +42,6 @@ public class FigureViewManager : IUpdateable
             figureView.Tick();
 
             var figure = figureView.FigureDesc;
-            var rotationSet = figure.RotationSets[figure.CurrentSet];
             var thereisAlive = false;
             for (var index = 0; index < figure.Blocks.Length; index++)
             {
@@ -47,19 +51,30 @@ public class FigureViewManager : IUpdateable
                 {
                     thereisAlive = true;
                     var rectTransform = figureView.BlockViews[index].transform as RectTransform;
-                    var minPositionX = (figure.X + block.X) / (float) _config.Width;
-                    var minPositionY = (figure.Y + block.Y) / (float) _config.Height;
                     rectTransform.anchoredPosition = Vector2.zero;
                     rectTransform.sizeDelta = Vector2.zero;
+                    
+                    var x = figure.X + block.X;
+                    var y = figure.Y + block.Y;
+                    var minPositionX = offsetXFloat + x * spacingXFloat + x * anchorSizeX;
+                    var minPositionY = offsetYFloat + y * spacingYFloat + y * anchorSizeY;
+                    
                     rectTransform.anchorMin = new Vector2(minPositionX, minPositionY);
                     rectTransform.anchorMax = new Vector2(minPositionX + anchorSizeX, minPositionY + anchorSizeY);
                 }
             }
             if (!thereisAlive)
             {
-                Object.Destroy(figureView);
-                i--;
+                _destroyList.Add(figureView);
             }
         }
+
+        foreach (var figureView in _destroyList)
+        {
+            Object.Destroy(figureView.gameObject);
+            FigureViews.Remove(figureView);
+        }
+        
+        
     }
 }

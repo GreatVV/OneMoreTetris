@@ -339,31 +339,222 @@ public class GameStateTests {
 		// 1 1 2
 
 		gameState.UpdateFullLines();
+
 		
 		Assert.IsTrue(gameState.IsTaken(0, 0));
 		Assert.IsTrue(gameState.IsTaken(1, 0));
 		Assert.IsTrue(gameState.IsTaken(2, 0));
 
-		var control = new FigureControl(gameState);
 		
-		var killSystem = new KillLinesSystem(gameState, control);
+		Assert.IsFalse(gameState.IsTaken(0, 1));
+		Assert.IsTrue(gameState.IsTaken(1, 1));
+		Assert.IsTrue(gameState.IsTaken(2, 1));
+
+		
+		Assert.IsFalse(gameState.IsTaken(0, 2));
+		Assert.IsTrue(gameState.IsTaken(1, 2));
+		Assert.IsTrue(gameState.IsTaken(2, 2));
+
+		var control = new FigureControl(gameState);
+
+		var config = new Config();
+		var killSystem = new KillLinesSystem(config, gameState, new ScoreSystem(config),  control);
 		killSystem.Tick();
 		
 		// 0 0 0
 		// 0 1 2
 		// 0 1 2
 		
-		Assert.IsFalse(gameState.IsTaken(0, 0));
-		Assert.IsTrue(gameState.IsTaken(1, 0));
-		Assert.IsTrue(gameState.IsTaken(2, 0));
-		
+	
 		Assert.AreEqual(null, gameState.GetFigureAt(0,0));
 		Assert.AreEqual(figure1, gameState.GetFigureAt(1,0));
 		Assert.AreEqual(figure2, gameState.GetFigureAt(2,0));
 		
-		Assert.IsFalse(gameState.IsTaken(0, 1));
-		Assert.IsFalse(gameState.IsTaken(0, 2));
-		Assert.IsFalse(gameState.IsTaken(0, 3));
+		
+		Assert.IsFalse(gameState.IsTaken(0, 0));
+		Assert.IsTrue(gameState.IsTaken(1, 0));
+		Assert.IsTrue(gameState.IsTaken(2, 0));
 
+		
+		Assert.IsFalse(gameState.IsTaken(0, 1));
+		Assert.IsTrue(gameState.IsTaken(1, 1));
+		Assert.IsTrue(gameState.IsTaken(2, 1));
+
+		
+		Assert.IsFalse(gameState.IsTaken(0, 2));
+		Assert.IsFalse(gameState.IsTaken(1, 2));
+		Assert.IsFalse(gameState.IsTaken(2, 2));
+	}
+	
+	[Test]
+	public void KillMultiLineTest()
+	{
+		var gameState = new GameState(3, 3);
+		
+		var blocks1 = new Block[]
+		{
+			new Block(0, 0),
+			new Block(1, 0),
+			new Block(1, 1),
+			new Block(1, 2),
+			new Block(0, 2),
+			
+		};
+
+		var figure1 = new Figure(blocks1);
+
+		var blocks2 = new Block[]
+		{
+			new Block(0, 0),
+			new Block(0, 1),
+			new Block(0, 2)
+		};
+		
+		var figure2 = new Figure(blocks2);
+		
+		Assert.AreEqual(0, gameState.FullLines.Count);
+		
+		gameState.MoveTo(figure1, 0,0);
+		gameState.MoveTo(figure2, 2, 0);
+		
+		// 1 1 2
+		// 0 1 2
+		// 1 1 2
+
+		gameState.UpdateFullLines();
+
+		
+		Assert.IsTrue(gameState.IsTaken(0, 0));
+		Assert.IsTrue(gameState.IsTaken(1, 0));
+		Assert.IsTrue(gameState.IsTaken(2, 0));
+
+		
+		Assert.IsFalse(gameState.IsTaken(0, 1));
+		Assert.IsTrue(gameState.IsTaken(1, 1));
+		Assert.IsTrue(gameState.IsTaken(2, 1));
+
+		
+		Assert.IsTrue(gameState.IsTaken(0, 2));
+		Assert.IsTrue(gameState.IsTaken(1, 2));
+		Assert.IsTrue(gameState.IsTaken(2, 2));
+
+		var control = new FigureControl(gameState);
+		
+		var config = new Config();
+		var killSystem = new KillLinesSystem(config, gameState, new ScoreSystem(config),  control);
+		killSystem.Tick();
+		
+		CollectionAssert.AreEqual(new[] {0, 2} , gameState.FullLines);
+		
+		// 0 0 0
+		// 0 0 0
+		// 0 1 2
+		
+	
+		Assert.AreEqual(null, gameState.GetFigureAt(0,0));
+		Assert.AreEqual(figure1, gameState.GetFigureAt(1,0));
+		Assert.AreEqual(figure2, gameState.GetFigureAt(2,0));
+		
+		
+		Assert.IsFalse(gameState.IsTaken(0, 0));
+		Assert.IsTrue(gameState.IsTaken(1, 0));
+		Assert.IsTrue(gameState.IsTaken(2, 0));
+
+		
+		Assert.IsFalse(gameState.IsTaken(0, 1));
+		Assert.IsFalse(gameState.IsTaken(1, 1));
+		Assert.IsFalse(gameState.IsTaken(2, 1));
+
+		
+		Assert.IsFalse(gameState.IsTaken(0, 2));
+		Assert.IsFalse(gameState.IsTaken(1, 2));
+		Assert.IsFalse(gameState.IsTaken(2, 2));
+	}
+	
+	
+	[Test]
+	public void KillLineMagicTest()
+	{
+		var gameState = new GameState(3, 3);
+		
+		var blocks1 = new Block[]
+		{
+			new Block(1, 0),
+			new Block(1, 1),
+			new Block(0, 1),
+			new Block(0, 2),
+			
+		};
+
+		var figure1 = new Figure(blocks1);
+
+		var blocks2 = new Block[]
+		{
+			new Block(0, 0),
+			new Block(0, 1),
+			new Block(0, 2)
+		};
+		
+		var figure2 = new Figure(blocks2);
+		
+		Assert.AreEqual(0, gameState.FullLines.Count);
+		
+		gameState.MoveTo(figure1, 0,0);
+		gameState.MoveTo(figure2, 2, 0);
+		
+		// 1 0 2
+		// 1 1 2
+		// 0 1 2
+
+		gameState.UpdateFullLines();
+
+		
+		Assert.IsFalse(gameState.IsTaken(0, 0));
+		Assert.IsTrue(gameState.IsTaken(1, 0));
+		Assert.IsTrue(gameState.IsTaken(2, 0));
+
+		
+		Assert.IsTrue(gameState.IsTaken(0, 1));
+		Assert.IsTrue(gameState.IsTaken(1, 1));
+		Assert.IsTrue(gameState.IsTaken(2, 1));
+
+		
+		Assert.IsTrue(gameState.IsTaken(0, 2));
+		Assert.IsFalse(gameState.IsTaken(1, 2));
+		Assert.IsTrue(gameState.IsTaken(2, 2));
+
+		var control = new FigureControl(gameState);
+		
+		var config = new Config();
+		config.MagicMode = true;
+		var killSystem = new KillLinesSystem(config, gameState, new ScoreSystem(config),  control);
+		killSystem.Tick();
+		
+		CollectionAssert.AreEqual(new[] {1} , gameState.FullLines);
+		
+		// 0 0 0
+		// 0 0 2
+		// 1 1 2
+		
+	
+		Assert.AreEqual(figure1, gameState.GetFigureAt(0,0));
+		Assert.AreEqual(figure1, gameState.GetFigureAt(1,0));
+		Assert.AreEqual(figure2, gameState.GetFigureAt(2,0));
+		Assert.AreEqual(figure2, gameState.GetFigureAt(2,1));
+		
+		
+		Assert.IsTrue(gameState.IsTaken(0, 0));
+		Assert.IsTrue(gameState.IsTaken(1, 0));
+		Assert.IsTrue(gameState.IsTaken(2, 0));
+
+		
+		Assert.IsFalse(gameState.IsTaken(0, 1));
+		Assert.IsFalse(gameState.IsTaken(1, 1));
+		Assert.IsTrue(gameState.IsTaken(2, 1));
+
+		
+		Assert.IsFalse(gameState.IsTaken(0, 2));
+		Assert.IsFalse(gameState.IsTaken(1, 2));
+		Assert.IsFalse(gameState.IsTaken(2, 2));
 	}
 }

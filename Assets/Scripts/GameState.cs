@@ -53,20 +53,15 @@ public class GameState
 
     public void MoveTo(Figure figure, int x, int y)
     {
-        if (figure.X > 0 && figure.Y > 0)
+        foreach (var cellState in CellStates)
         {
-            for (var index = 0; index < figure.Blocks.Length; index++)
+            if (cellState.Figure == figure)
             {
-                var block = figure.Blocks[index];
-                var previousX = figure.X + block.X;
-                var previousY = figure.Y + block.Y;
-                var targetCellIndex = GetIndex(previousX, previousY);
-                var cellState = CellStates[targetCellIndex];
                 cellState.Figure = null;
                 cellState.Block = null;
             }
         }
-
+        
         figure.X = x;
         figure.Y = y;
         foreach (var block in figure.Blocks)
@@ -91,22 +86,33 @@ public class GameState
         
         foreach (var block in figure.Blocks)
         {
-            var blockX = block.X + x;
-            var blockY = block.Y + y;
-            if (GetFigureAt(blockX, blockY) == figure)
-            {
-                continue;
-            }
-            
-            if (IsTaken(blockX, blockY))
-            {
-                return false;
-            }
+            var globalPositionX = block.X + x;
+            var globalPositionY = block.Y + y;
+            if (!CheckPosition(globalPositionX, globalPositionY, figure)) return false;
         }
         return true;
     }
 
-    
+    private bool CheckPosition(int globalPositionX, int globalPositionY, Figure figure)
+    {
+        if (globalPositionX < 0 || globalPositionY < 0 || globalPositionX >= Width || globalPositionY >= Height)
+        {
+            return false;
+        }
+
+        if (GetFigureAt(globalPositionX, globalPositionY) == figure)
+        {
+            return true;
+        }
+
+        if (IsTaken(globalPositionX, globalPositionY))
+        {
+            return false;
+        }
+        return true;
+    }
+
+
     public void RotateCounterClockwise(Figure figure)
     {
         var nextSetIndex = (figure.CurrentSet == figure.RotationSets.Length - 1) ? 0 : (figure.CurrentSet + 1);
@@ -118,28 +124,11 @@ public class GameState
         var newSet = figure.RotationSets[nextSetIndex];
         foreach (var newPosition in newSet)
         {
-            var newPositionX = figure.X + (int) newPosition.x;
-            var newPositionY = figure.Y + (int) newPosition.y;
+            var globalPositionX = figure.X + (int) newPosition.x;
+            var globalPositionY = figure.Y + (int) newPosition.y;
 
-            var figureAt = GetFigureAt(newPositionX, newPositionY);
-            if (figureAt == figure)
-            {
-                continue;
-            }
-
-            if (IsTaken(newPositionX, newPositionY))
-            {
+            if (!CheckPosition(globalPositionX, globalPositionY, figure))
                 return;
-            }
-        }
-
-        for (var index = 0; index < figure.Blocks.Length; index++)
-        {
-            var block = figure.Blocks[index];
-            var cellIndex = GetIndex(figure.X + block.X, figure.Y + block.Y);
-            var cellState = CellStates[cellIndex];
-            cellState.Figure = null;
-            cellState.Block = null;
         }
 
         figure.Rotate(nextSetIndex);
